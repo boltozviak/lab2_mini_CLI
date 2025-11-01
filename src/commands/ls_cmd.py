@@ -1,14 +1,13 @@
-# import logging
+import logging
 import os
 import stat
 import pwd
 import grp
-# from logging import Logger
 from os import PathLike
 from pathlib import Path
 from datetime import datetime
 
-# logger = Logger(__name__)
+logger = logging.getLogger(__name__)
 
 def ls_command(
     path: PathLike[str] | str,
@@ -16,12 +15,23 @@ def ls_command(
     advanced: bool = False) -> str:
 
     path = Path(path)
-    if advanced:
-        files = os.listdir(path)
-    else:
-        files = [f for f in os.listdir(path) if not f.startswith('.')]
 
+    if not path.exists():
+        logger.error(f"Path is not exists: {path}")
+        raise FileNotFoundError(f"Path is not exists: {path}")
 
+    if not path.is_dir():
+        logger.error(f"Path is not a directory: {path}")
+        raise NotADirectoryError(f"Path is not a directory: {path}")
+
+    try:
+        if advanced:
+            files = os.listdir(path)
+        else:
+            files = [f for f in os.listdir(path) if not f.startswith('.')]
+    except PermissionError:
+        logger.error(f"Permission denied: {path}")
+        raise PermissionError(f"Permission denied: {path}")
 
     if long_format:
         dir_files = []
@@ -39,7 +49,8 @@ def ls_command(
             file_str = f"{file_mode:5} {file_nlinks:2} {file_uid:5} {file_gid:5} {file_size:5} {file_time:20} {file}"
 
             dir_files.append(file_str)
-
+        logger.info(path)
         return "\n".join(dir_files)
 
+    logger.info(path)
     return "\n".join(files)
