@@ -4,5 +4,15 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
+    "click>=8.3.0",
+    "click-shell>=2.1",
+    "mypy>=1.18.2",
+    "pre-commit>=4.3.0",
     "pytest>=8.4.2",
+    "typer>=0.20.0",
+    "types-click-shell>=2.1.0.20250821",
 ]
+
+[tool.mypy]
+python_version = "3.13.7"
+ignore_missing_imports = true
