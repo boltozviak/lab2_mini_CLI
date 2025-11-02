@@ -1,5 +1,4 @@
 import logging
-# import os
 import shutil
 from os import PathLike
 from pathlib import Path
@@ -12,11 +11,16 @@ def mv_command(
     filename_destination: PathLike[str] | str,
 ) -> None:
 
-    source_file = Path(filename_source)
-    destination_file = Path(filename_destination)
+    src = Path(filename_source)
+    dst = Path(filename_destination)
 
-    if not source_file.exists():
-        logger.error(f"Entered source file is not exists: {source_file}")
-        raise FileNotFoundError(f"Entered source file is not exists: {source_file}")
+    if not src.exists():
+        logger.error(f"Entered source file is not exists: {src}")
+        raise FileNotFoundError(f"Entered source file is not exists: {src}")
 
-    shutil.move(source_file, destination_file)
+    try:
+        shutil.move(src, dst)
+        logger.info(f"Successfully moved the file: {src} to {dst}")
+    except OSError as e:
+        logger.error(f"{e}: {src} to {dst}")
+        raise

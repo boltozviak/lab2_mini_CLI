@@ -1,4 +1,5 @@
 import os
+import platform
 from logging.config import dictConfig
 import typer
 from src.constants.config import LOGGING_CONFIG
@@ -9,6 +10,7 @@ from src.commands.cd_cmd import cd_command
 from src.commands.mv_cmd import mv_command
 from src.commands.rm_cmd import rm_command
 from src.commands.cp_cmd import cp_command
+# from src.commands.arch_commands import zip_command
 from pathlib import Path
 from src.constants.file_mode import FileReadMode
 from typing import Literal
@@ -20,8 +22,17 @@ app = typer.Typer()
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
     dictConfig(LOGGING_CONFIG)
-    typer.echo("---- Mini CLI ----")
-    typer.echo("Wrtie 'exit' to exit")
+    typer.echo("\t\t\t---- Mini CLI ----")
+    typer.echo("\t\t\tWrite 'exit' to exit")
+
+    system = platform.system()
+    root_dir = Path.home()
+
+    if system == "Windows":
+        typer.echo("Don't support Windows")
+        typer.exit(1)
+    else:
+        os.chdir(root_dir)
 
     if ctx.invoked_subcommand is None:
         shell = make_click_shell(ctx, prompt=lambda: os.getcwd() + "> ")
@@ -57,6 +68,8 @@ def cat(
         typer.echo(data)
     except OSError as e:
         typer.echo(e)
+    except ValueError as e:
+        typer.echo(e)
 
 @app.command()
 def cd(
@@ -83,6 +96,10 @@ def rm(
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursive remove"),
 ):
     try:
+        if recursive:
+            confirm = typer.confirm("Are you sure you want to remove this catalog?")
+            if not confirm:
+                typer.echo("Operation cancelled")
         rm_command(filename, recursive=recursive)
     except OSError as e:
         typer.echo(e)
@@ -94,6 +111,52 @@ def cp(
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursive copy"),
 ):
     try:
+        if recursive:
+            confirm = typer.confirm("Are you sure you want to copy this catalog?")
+            if not confirm:
+                typer.echo("Operation cancelled")
         cp_command(filename_source, filename_destination, recursive=recursive)
     except OSError as e:
         typer.echo(e)
+
+# @app.command()
+# def zip(
+#     src: Path = typer.Argument(..., help="Path to source file"),
+#     archive_name: Path = typer.Argument(..., help="Path to archive file"),
+#     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursive zip"),
+# ):
+#     try:
+#         zip_command(src, archive_name, recursive=recursive)
+#     except OSError as e:
+#         typer.echo(e)
+
+# @app.command()
+# def unzip(
+#     archive_name: Path = typer.Argument(..., help="Path to archive file"),
+#     destination: Path = typer.Argument(..., help="Path to destination file"),
+# ):
+#     try:
+#         unzip_command(archive_name, destination)
+#     except OSError as e:
+#         typer.echo(e)
+
+# @app.command()
+# def tar(
+#     src: Path = typer.Argument(..., help="Path to source file"),
+#     archive_name: Path = typer.Argument(..., help="Path to archive file"),
+#     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursive tar"),
+# ):
+#     try:
+#         tar_command(src, archive_name, recursive=recursive)
+#     except OSError as e:
+#         typer.echo(e)
+
+# @app.command()
+# def untar(
+#     archive_name: Path = typer.Argument(..., help="Path to archive file"),
+#     destination: Path = typer.Argument(..., help="Path to destination file"),
+# ):
+#     try:
+#         untar_command(archive_name, destination)
+#     except OSError as e:
+#         typer.echo(e)

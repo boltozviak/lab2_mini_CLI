@@ -9,21 +9,21 @@ def cd_command(
     path: PathLike[str] | str
 ) -> None:
     path = Path(path)
+    const_path = Path.cwd()
 
     if str(path) == '~':
         os.chdir(os.path.expanduser('~'))
-        logger.info(os.getcwd())
+        logger.info(f"Changed directory from: '{const_path}' to: '{Path.cwd()}'")
         return
 
     if not path.exists():
-        logger.error(f"Path is not exists: {os.getcwd()}")
-        raise FileNotFoundError(f"Path is not exists: {path}")
+        logger.error(f"Path is not exists: {Path.cwd()}")
+        raise FileNotFoundError(f"Path is not exists: {Path.cwd()}")
 
     if not path.is_dir():
-        logger.error(f"Path is not a directory: {os.getcwd()}")
-        raise NotADirectoryError(f"Path is not a directory: {path}")
-
+        logger.error(f"Path is not a directory: {Path.cwd()}")
+        raise NotADirectoryError(f"Path is not a directory: {Path.cwd()}")
 
     os.chdir(path)
-    logger.info(os.getcwd())
+    logger.info(f"Changed directory from: '{const_path}' to: '{Path.cwd()}'")
     return
