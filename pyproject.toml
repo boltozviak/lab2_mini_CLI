@@ -8,7 +8,9 @@ dependencies = [
     "click-shell>=2.1",
     "mypy>=1.18.2",
     "pre-commit>=4.3.0",
+    "pyfakefs>=5.10.1",
     "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
     "typer>=0.20.0",
     "types-click-shell>=2.1.0.20250821",
 ]
@@ -16,3 +18,15 @@ dependencies = [
 [tool.mypy]
 python_version = "3.12"
 ignore_missing_imports = true
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "*/main.py",
+    "*/__init__.py",
+    "*/constants/*",
+    "*/shell.py"
+]
+branch = true

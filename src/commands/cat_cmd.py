@@ -30,6 +30,7 @@ def cat_command(
             content_bytes: bytes = path.read_bytes()
             logger.info(f"Successfully read the file: {path}")
             return content_bytes
+
     except UnicodeDecodeError as e:
         logger.error(f"{e}: {path}")
         raise ValueError(f"{e}: {path}")

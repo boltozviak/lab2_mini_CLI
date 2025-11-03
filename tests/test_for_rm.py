@@ -1,0 +1,43 @@
+import pytest
+import os
+
+from pathlib import Path
+
+from pyfakefs.fake_filesystem import FakeFilesystem
+from src.commands.rm_cmd import rm_command
+
+
+def test_rm_file_successfully(fs: FakeFilesystem):
+    fs.create_file("/test_file.txt", contents="data")
+    rm_command("/test_file.txt")
+    assert not Path("/test_file.txt").exists()
+
+def test_rm_nonexistent_file(fs: FakeFilesystem):
+    with pytest.raises(FileNotFoundError) as exc_info:
+        rm_command("/nonexistent.txt")
+    assert "Entered source file is not exists" in str(exc_info.value)
+
+def test_rm_important_path_home(fs: FakeFilesystem):
+    home = Path.home()
+    fs.create_dir(home)
+    with pytest.raises(PermissionError) as exc_info:
+        rm_command(home)
+    assert "You can't remove this file" in str(exc_info.value)
+
+def test_rm_parent_directory_of_cwd(fs: FakeFilesystem):
+    fs.create_dir("/parent/child")
+    os.chdir("/parent/child")
+    with pytest.raises(PermissionError):
+        rm_command("/parent")
+
+def test_rm_directory_without_recursive(fs: FakeFilesystem):
+    fs.create_dir("/test_dir")
+    with pytest.raises(IsADirectoryError) as exc_info:
+        rm_command("/test_dir")
+    assert "Entered source is not a file" in str(exc_info.value)
+
+def test_rm_directory_with_recursive(fs: FakeFilesystem):
+    fs.create_dir("/test_dir")
+    fs.create_file("/test_dir/file.txt")
+    rm_command("/test_dir", recursive=True)
+    assert not Path("/test_dir").exists()
