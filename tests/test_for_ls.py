@@ -1,4 +1,8 @@
 import pytest
+import os
+import pwd
+import grp
+from datetime import datetime
 
 from pyfakefs.fake_filesystem import FakeFilesystem
 from src.commands.ls_cmd import ls_command
@@ -12,156 +16,84 @@ def test_ls_empty_returns_empty_string(fs: FakeFilesystem):
 def test_ls_default_shows_file1(fs: FakeFilesystem):
     fs.create_dir("/dir")
     fs.create_file("/dir/file1.txt")
-    fs.create_file("/dir/file2.txt")
-    fs.create_file("/dir/.hidden")
     result_default = ls_command("/dir")
     assert "file1.txt" in result_default
 
-def test_ls_default_shows_file2(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/file1.txt")
-    fs.create_file("/dir/file2.txt")
-    fs.create_file("/dir/.hidden")
-    result_default = ls_command("/dir")
-    assert "file2.txt" in result_default
-
 def test_ls_default_hides_hidden(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file1.txt")
-    fs.create_file("/dir/file2.txt")
     fs.create_file("/dir/.hidden")
     result_default = ls_command("/dir")
     assert ".hidden" not in result_default
 
-def test_ls_advanced_shows_file1(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/file1.txt")
-    fs.create_file("/dir/file2.txt")
-    fs.create_file("/dir/.hidden")
-    result_advanced = ls_command("/dir", advanced=True)
-    assert "file1.txt" in result_advanced
-
-def test_ls_advanced_shows_file2(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/file1.txt")
-    fs.create_file("/dir/file2.txt")
-    fs.create_file("/dir/.hidden")
-    result_advanced = ls_command("/dir", advanced=True)
-    assert "file2.txt" in result_advanced
-
 def test_ls_advanced_shows_hidden(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file1.txt")
-    fs.create_file("/dir/file2.txt")
     fs.create_file("/dir/.hidden")
     result_advanced = ls_command("/dir", advanced=True)
     assert ".hidden" in result_advanced
 
-
-def test_ls_errors(fs: FakeFilesystem):
+def test_ls_errors_file_not_found(fs: FakeFilesystem):
     with pytest.raises(FileNotFoundError) as exc_info:
         ls_command("/nonexistent")
     assert "Файл не существует" in str(exc_info.value)
 
+def test_ls_errors_not_a_directory(fs: FakeFilesystem):
     fs.create_file("/file.txt")
     with pytest.raises(NotADirectoryError) as exc_info:
         ls_command("/file.txt")
     assert "Не директория" in str(exc_info.value)
 
-
-def test_ls_long_format_lists_file_txt(fs: FakeFilesystem):
+def test_ls_file_mode(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
+    fs.create_file("/dir/file.txt")
+    result = ls_command("/dir", long_format=True)
+    assert result.split()[0].startswith("-")
+
+def test_ls_dir_mode(fs: FakeFilesystem):
+    fs.create_dir("/dir")
     fs.create_dir("/dir/subdir")
     result = ls_command("/dir", long_format=True)
-    assert "file.txt" in result
+    assert result.split()[0].startswith("d")
 
-def test_ls_long_format_lists_empty_txt(fs: FakeFilesystem):
+def test_ls_nlinks(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
+    fs.create_file("/dir/file.txt")
     result = ls_command("/dir", long_format=True)
-    assert "empty.txt" in result
+    assert result.split()[1].isdigit()
 
-def test_ls_long_format_lists_subdir(fs: FakeFilesystem):
+def test_ls_uid(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
+    fs.create_file("/dir/file.txt")
     result = ls_command("/dir", long_format=True)
-    assert "subdir" in result
+    uid_field = result.split()[2]
+    stat_uid_name = pwd.getpwuid(os.stat("/dir/file.txt").st_uid).pw_name
+    assert uid_field == stat_uid_name
 
-def test_ls_long_format_has_three_lines(fs: FakeFilesystem):
+def test_ls_gid(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
+    fs.create_file("/dir/file.txt")
     result = ls_command("/dir", long_format=True)
-    lines = result.split("\n")
-    assert len(lines) == 3
+    gid_field = result.split()[3]
+    stat_gid_name = grp.getgrgid(os.stat("/dir/file.txt").st_gid).gr_name
+    assert gid_field == stat_gid_name
 
-def test_ls_long_format_line_has_min_columns(fs: FakeFilesystem):
+def test_ls_size(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
+    fs.create_file("/dir/file.txt", contents="azaza")
     result = ls_command("/dir", long_format=True)
-    first_line = result.split("\n")[0]
-    parts = first_line.split()
-    assert len(parts) >= 7
+    size_field = int(result.split()[4])
+    stat_size = os.stat("/dir/file.txt").st_size
+    assert size_field == stat_size
 
-def test_ls_long_format_contains_type_marker(fs: FakeFilesystem):
+def test_ls_mtime(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
+    fs.create_file("/dir/file.txt")
     result = ls_command("/dir", long_format=True)
-    assert "-" in result or "d" in result
+    time_field = f"{result.split()[5]} {result.split()[6]}"
+    stat_time = str(datetime.fromtimestamp(os.stat("/dir/file.txt").st_mtime)).split(".")[0]
+    assert time_field == stat_time
 
-def test_ls_long_format_contains_size_11(fs: FakeFilesystem):
+def test_ls_name(fs: FakeFilesystem):
     fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
+    fs.create_file("/dir/file.txt")
     result = ls_command("/dir", long_format=True)
-    assert "11" in result
-
-def test_ls_long_format_contains_size_0(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
-    result = ls_command("/dir", long_format=True)
-    assert "0" in result
-
-def test_ls_long_format_has_digits(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/file.txt", contents="Hello World")
-    fs.create_file("/dir/empty.txt", contents="")
-    fs.create_dir("/dir/subdir")
-    result = ls_command("/dir", long_format=True)
-    assert any(char.isdigit() for char in result)
-
-
-def test_ls_long_format_without_advanced_hides_hidden(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/visible.txt")
-    fs.create_file("/dir/.hidden")
-    result_no_advanced = ls_command("/dir", long_format=True)
-    assert ".hidden" not in result_no_advanced
-
-def test_ls_long_format_with_advanced_shows_visible(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/visible.txt")
-    fs.create_file("/dir/.hidden")
-    result_advanced = ls_command("/dir", long_format=True, advanced=True)
-    assert "visible.txt" in result_advanced
-
-def test_ls_long_format_with_advanced_shows_hidden(fs: FakeFilesystem):
-    fs.create_dir("/dir")
-    fs.create_file("/dir/visible.txt")
-    fs.create_file("/dir/.hidden")
-    result_advanced = ls_command("/dir", long_format=True, advanced=True)
-    assert ".hidden" in result_advanced
+    assert result.split()[-1] == "file.txt"

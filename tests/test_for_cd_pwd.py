@@ -24,19 +24,19 @@ def test_cd_go_to_child(fs: FakeFilesystem):
     cd_command("child")
     assert Path.cwd() == Path("/parent/child")
 
-def test_cd_parent_directory(fs: FakeFilesystem):
+def test_cd_parent_dir(fs: FakeFilesystem):
     fs.create_dir("/parent/child")
     os.chdir("/parent/child")
     cd_command("..")
     assert Path.cwd() == Path("/parent")
 
-def test_cd_current_directory(fs: FakeFilesystem):
+def test_cd_current_dir(fs: FakeFilesystem):
     fs.create_dir("/parent")
     os.chdir("/parent")
     cd_command(".")
     assert Path.cwd() == Path("/parent")
 
-def test_cd_home_directory(fs: FakeFilesystem):
+def test_cd_home_dir(fs: FakeFilesystem):
     home = os.path.expanduser("~")
     fs.create_dir(home)
     fs.create_dir("/some_dir")
@@ -44,26 +44,26 @@ def test_cd_home_directory(fs: FakeFilesystem):
     cd_command("~")
     assert Path.cwd() == Path(home)
 
-def test_cd_errors(fs: FakeFilesystem):
+def test_cd_to_nonexistent_dir(fs: FakeFilesystem):
     fs.create_dir("/existing")
     os.chdir("/existing")
     with pytest.raises(FileNotFoundError) as exc_info:
-        cd_command("/nonexistent")
+        cd_command("/test_dir")
     assert "Файл не существует" in str(exc_info.value)
 
-def test_cd_nonexistent_subdir_raises_error(fs: FakeFilesystem):
+def test_cd_to_nonexistent_subdir(fs: FakeFilesystem):
     fs.create_dir("/existing")
     with pytest.raises(FileNotFoundError) as exc_info:
-        cd_command("/existing/nonexistent_subdir")
+        cd_command("/existing/test_subdir")
     assert "Файл не существует" in str(exc_info.value)
 
-def test_cd_file_raises_error(fs: FakeFilesystem):
+def test_cd_to_file(fs: FakeFilesystem):
     fs.create_file("/test_file.txt")
     with pytest.raises(NotADirectoryError) as exc_info:
         cd_command("/test_file.txt")
     assert "Не директория" in str(exc_info.value)
 
-def test_pwd_command(fs: FakeFilesystem):
+def test_pwd(fs: FakeFilesystem):
     fs.create_dir("/test_pwd")
     os.chdir("/test_pwd")
     result = pwd_command()
