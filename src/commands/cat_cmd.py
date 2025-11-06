@@ -10,6 +10,18 @@ def cat_command(
     filename: PathLike[str] | str,
     mode: Literal[FileReadMode.string, FileReadMode.bytes] = FileReadMode.string
 ) -> str | bytes:
+    '''
+    Выводит, что в файле написано
+
+    Параметры:
+    - filename - путь к файлу, который читаем
+    - mode - читаем байты или строки
+
+    Исключения:
+    - FileNotFoundError - файл не существует
+    - IsADirectoryError - файл не является файлом
+    - UnicodeDecodeError - файл не является текстовым файлом
+    '''
 
     path = Path(filename)
 

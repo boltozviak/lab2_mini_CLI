@@ -13,6 +13,18 @@ def ls_command(
     path: PathLike[str] | str,
     long_format: bool = False,
     advanced: bool = False) -> str:
+    '''
+    Выводит список того, что в директории находится
+
+    Параметры:
+    - path - путь к директории, которую просматриваем
+    - long_format - показать больше инфы
+    - advanced - показать скрытые файлы
+
+    Исключения:
+    - FileNotFoundError - директория не найдена/не существует
+    - NotADirectoryError - путь ведёт не в директорию
+    '''
 
     path = Path(path)
 

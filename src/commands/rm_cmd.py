@@ -9,6 +9,18 @@ def rm_command(
     filename_source: PathLike[str] | str,
     recursive: bool = False,
 ) -> None:
+    '''
+    Удаляет файл или директорию
+
+    Параметры:
+    - filename_source - путь к файлу или директории, которые удаляем
+    - recursive - удаляем директорию => ставим
+
+    Исключения:
+    - FileNotFoundError - не найдено/не существует исходный файл/директория
+    - PermissionError - попытка удалить важный файл/директорию
+    - IsADirectoryError - попытка удалить директорию не рекурсивно
+    '''
 
     source_file = Path(filename_source)
     current_path = Path.cwd().resolve()
@@ -35,16 +47,8 @@ def rm_command(
         raise IsADirectoryError(f"Директория не пуста: {source_file}")
 
     if source_file.is_dir():
-        try:
-            shutil.rmtree(source_file)
-            logger.info(f"Удалена директория: {source_file}")
-        except OSError:
-            logger.error(f"Ошибка при удалении: {source_file}")
-            raise
+        shutil.rmtree(source_file)
+        logger.info(f"Удалена директория: {source_file}")
     else:
-        try:
-            source_file.unlink()
-            logger.info(f"Удален файл: {source_file}")
-        except OSError:
-            logger.error(f"Ошибка при удалении файла: {source_file}")
-            raise
+        source_file.unlink()
+        logger.info(f"Удален файл: {source_file}")

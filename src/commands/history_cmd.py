@@ -8,6 +8,9 @@ logger = logging.getLogger(__name__)
 HISTORY_FILE = Path(__file__).parent.parent.parent / ".history"
 
 def history_command() -> str:
+    '''
+    Выводит историю команд, сохраняется между сессиями
+    '''
     if not HISTORY_FILE.exists():
         return "История пуста"
 

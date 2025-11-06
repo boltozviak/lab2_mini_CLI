@@ -1,3 +1,8 @@
+from pathlib import Path
+
+LOG_FILE = "shell.log"
+LOG_FILE_PATH = Path(__file__).parent.parent.parent / LOG_FILE
+
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -17,7 +22,7 @@ LOGGING_CONFIG = {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "standard",
             "mode": "a",
-            "filename": "shell.log",
+            "filename": str(LOG_FILE_PATH),
             "maxBytes": 5 * 1024 * 1024,  # 5 MB before rotating
             "backupCount": 5,
             "level": "DEBUG",

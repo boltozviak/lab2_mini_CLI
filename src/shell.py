@@ -8,17 +8,17 @@ from typing import Literal
 from pathlib import Path
 from click_shell import make_click_shell
 
-from src.constants.config import LOGGING_CONFIG
-from src.commands.ls_cmd import ls_command
-from src.commands.cat_cmd import cat_command
-from src.commands.pwd_cmd import pwd_command
-from src.commands.cd_cmd import cd_command
-from src.commands.mv_cmd import mv_command
-from src.commands.rm_cmd import rm_command
-from src.commands.cp_cmd import cp_command
-from src.commands.history_cmd import history_command
-from src.commands.arch_cmd import zip_command, unzip_command, tar_command, untar_command
-from src.constants.file_mode import FileReadMode
+from .constants.config import LOGGING_CONFIG
+from .commands.ls_cmd import ls_command
+from .commands.cat_cmd import cat_command
+from .commands.pwd_cmd import pwd_command
+from .commands.cd_cmd import cd_command
+from .commands.mv_cmd import mv_command
+from .commands.rm_cmd import rm_command
+from .commands.cp_cmd import cp_command
+from .commands.history_cmd import history_command
+from .commands.arch_cmd import zip_command, unzip_command, tar_command, untar_command
+from .constants.file_mode import FileReadMode
 
 
 app = typer.Typer()
@@ -26,12 +26,12 @@ HISTORY_FILE = Path(__file__).parent.parent / ".history"
 
 def save_to_history(command: str):
     '''
-    сохраняет команду в историю
-    создаёт файл истории, если он не существует
+    1)сохраняет команду в историю;
+    2)создаёт файл истории, если он не существует
 
-    сохраняет команду в словарь history, где ключом является номер команды,
+    3)сохраняет команду в словарь history, где ключом является номер команды,
     а значением - сама команда(сохраняет как корректные команды, так и неверные)
-    добавляет в .history
+    4)добавляет в файл .history
     '''
 
     if not command or not command.strip():
@@ -63,9 +63,9 @@ def main(ctx: typer.Context):
     проверяет ОС, инициализирует логирование, запускает интерактивную оболочку
 
     shell - интерактивная оболочка ClickShell
-    _original_onecmd - оригинальный команду
+    _original_onecmd - записывает в себя введённую команду
     shell.onecmd - сохраняет команду в историю и затем выполняет её,
-    т.к. save_to_history возвращает None
+    т.к. save_to_history возвращает None, то _original_onecmd выполнится после save_to_history
     '''
 
     system = platform.system()

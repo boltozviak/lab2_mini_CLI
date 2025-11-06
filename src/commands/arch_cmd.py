@@ -11,6 +11,20 @@ def zip_command(
     src: PathLike[str] | str,
     archive_name: PathLike[str] | str,
 ) -> None:
+    '''
+    Архивируем в zip
+
+    Параметры:
+    - src - путь к директории, которую запаковываем
+    - archive_name - путь к архиву, который создаём
+
+    Исключения:
+    - ValueError - не zip архив => должен заканчиваться на .zip
+    - FileExistsError - архив c введённым именем уже существует
+    - FileNotFoundError - исходная директория не существует/не найдена
+    - NotADirectoryError - попытка запоковать не директория
+    '''
+
     src = Path(src)
     archive_name = Path(archive_name)
 
@@ -41,8 +55,18 @@ def zip_command(
 
 def unzip_command(
     archive_name: PathLike[str] | str,
-
 ) -> None:
+    '''
+    Распаковываем zip-архив
+
+    Параметры:
+    - archive_name - путь к архиву, который распаковываем
+
+    Исключения:
+    - FileNotFoundError - архив не существует/не найден
+    - ValueError - не zip архив => должен заканчиваться на .zip
+    '''
+
     archive_name = Path(archive_name)
     destination = Path.cwd()
 
@@ -54,17 +78,27 @@ def unzip_command(
         logger.error(f"Не zip архив: {archive_name}")
         raise ValueError(f"Не zip архив: {archive_name}")
 
-    try:
-        shutil.unpack_archive(str(archive_name), str(destination), 'zip')
-        logger.info(f"Успешно распакован zip-архив: {archive_name} в {destination}")
-    except OSError as e:
-        logger.error(f"Ошибка при распаковке zip-архива: {e}: {archive_name} в {destination}")
-        raise
+    shutil.unpack_archive(str(archive_name), str(destination), 'zip')
+    logger.info(f"Успешно распакован zip-архив: {archive_name} в {destination}")
 
 def tar_command(
     src: PathLike[str] | str,
     archive_name: PathLike[str] | str,
 ) -> None:
+    '''
+    Архивируем в tar.gz
+
+    Параметры:
+    - src - путь к директории, которую запаковываем
+    - archive_name - путь к архиву, который создаём
+
+    Исключения:
+    - ValueError - не tar.gz архив => должен заканчиваться на .tar.gz
+    - FileExistsError - архив c введённым именем уже существует
+    - FileNotFoundError - исходная директория не существует/не найдена
+    - NotADirectoryError - попытка запоковать не директория
+    '''
+
     src = Path(src)
     archive_name = Path(archive_name)
 
@@ -84,17 +118,24 @@ def tar_command(
         logger.error(f"Не директория: {src}")
         raise NotADirectoryError(f"Не директория: {src}")
 
-    try:
-        with tarfile.open(archive_name, 'w:gz') as tarf:
-            tarf.add(str(src), arcname=src.name, recursive=True)
-            logger.info(f"Успешно создан tar.gz-архив: {archive_name}")
-    except OSError as e:
-        logger.error(f"Ошибка при создании tar.gz-архива: {e}: {src} в {archive_name}")
-        raise
+    with tarfile.open(archive_name, 'w:gz') as tarf:
+        tarf.add(str(src), arcname=src.name, recursive=True)
+        logger.info(f"Успешно создан tar.gz-архив: {archive_name}")
 
 def untar_command(
     archive_name: PathLike[str] | str,
 ) -> None:
+    '''
+    Распаковываем tar.gz-архив
+
+    Параметры:
+    - archive_name - путь к архиву, который распаковываем
+
+    Исключения:
+    - FileNotFoundError - архив не существует/не найден
+    - ValueError - не tar.gz архив => должен заканчиваться на .tar.gz
+    '''
+
     archive_name = Path(archive_name)
     destination = Path.cwd()
 
@@ -106,10 +147,7 @@ def untar_command(
         logger.error(f"Не tar.gz архив: {archive_name}")
         raise ValueError(f"Не tar.gz архив: {archive_name}")
 
-    try:
-        with tarfile.open(archive_name, 'r:gz') as tarf:
-            tarf.extractall(destination)
-            logger.info(f"Успешно распакован tar.gz-архив: {archive_name} в {destination}")
-    except OSError as e:
-        logger.error(f"Ошибка при распаковке tar.gz-архива: {e}: {archive_name} в {destination}")
-        raise
+
+    with tarfile.open(archive_name, 'r:gz') as tarf:
+        tarf.extractall(destination)
+        logger.info(f"Успешно распакован tar.gz-архив: {archive_name} в {destination}")
