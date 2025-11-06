@@ -16,35 +16,35 @@ def rm_command(
 
 
     if not source_file.exists():
-        logger.error(f"Entered source file is not exists: {source_file}")
-        raise FileNotFoundError(f"Entered source file is not exists: {source_file}")
+        logger.error(f"Файл не существует: {source_file}")
+        raise FileNotFoundError(f"Файл не существует: {source_file}")
 
     source_file = source_file.resolve()
 
     if source_file in denied_paths:
-        logger.error(f"Try to remove important file: {source_file}")
-        raise PermissionError(f"You can't remove this file: {source_file}")
+        logger.error(f"Попытка удалить важный файл: {source_file}")
+        raise PermissionError(f"Вы не можете удалить этот файл: {source_file}")
 
     if current_path != source_file:
         if current_path.is_relative_to(source_file):
-            logger.error(f"Try to remove important file: {source_file}")
-            raise PermissionError(f"You can't remove this file: {source_file}")
+            logger.error(f"Попытка удалить важный файл: {source_file}")
+            raise PermissionError(f"Вы не можете удалить этот файл: {source_file}")
 
     if source_file.is_dir() and not recursive:
-        logger.error(f"Entered source is not a file: {source_file}")
-        raise IsADirectoryError(f"Entered source is not a file: {source_file}")
+        logger.error(f"Директория не пуста: {source_file}")
+        raise IsADirectoryError(f"Директория не пуста: {source_file}")
 
     if source_file.is_dir():
         try:
             shutil.rmtree(source_file)
-            logger.info(f"Removed directory: {source_file}")
+            logger.info(f"Удалена директория: {source_file}")
         except OSError:
-            logger.error(f"Failed to remove: {source_file}")
+            logger.error(f"Ошибка при удалении: {source_file}")
             raise
     else:
         try:
             source_file.unlink()
-            logger.info(f"Removed file: {source_file}")
+            logger.info(f"Удален файл: {source_file}")
         except OSError:
-            logger.error(f"Failed to remove file: {source_file}")
+            logger.error(f"Ошибка при удалении файла: {source_file}")
             raise

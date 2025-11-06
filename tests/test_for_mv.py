@@ -16,4 +16,4 @@ def test_mv_file_successfully(fs: FakeFilesystem):
 def test_mv_nonexistent_source(fs: FakeFilesystem):
     with pytest.raises(FileNotFoundError) as exc_info:
         mv_command("/nonexistent.txt", "/dest.txt")
-    assert "Entered source file is not exists" in str(exc_info.value)
+    assert "Файл не существует" in str(exc_info.value)

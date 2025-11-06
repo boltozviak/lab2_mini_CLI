@@ -20,7 +20,7 @@ def test_cp_directory_without_recursive(fs: FakeFilesystem):
     fs.create_dir("/source_dir")
     with pytest.raises(IsADirectoryError) as exc_info:
         cp_command("/source_dir", "/dest_dir")
-    assert "use -r" in str(exc_info.value)
+    assert "Не директория" in str(exc_info.value)
 
 def test_cp_directory_recursive_to_new_location(fs: FakeFilesystem):
     fs.create_dir("/source_dir")
@@ -42,4 +42,4 @@ def test_cp_directory_recursive_dest_is_file(fs: FakeFilesystem):
     fs.create_file("/dest_file.txt")
     with pytest.raises(IsADirectoryError) as exc_info:
         cp_command("/source_dir", "/dest_file.txt", recursive=True)
-    assert "Destination is a file" in str(exc_info.value)
+    assert "Пункт назначения - файл" in str(exc_info.value)

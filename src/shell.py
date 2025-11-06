@@ -25,12 +25,21 @@ app = typer.Typer()
 HISTORY_FILE = Path(__file__).parent.parent / ".history"
 
 def save_to_history(command: str):
+    '''
+    сохраняет команду в историю
+    создаёт файл истории, если он не существует
+
+    сохраняет команду в словарь history, где ключом является номер команды,
+    а значением - сама команда(сохраняет как корректные команды, так и неверные)
+    добавляет в .history
+    '''
+
     if not command or not command.strip():
         return
 
     if not HISTORY_FILE.exists():
         HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        with open(HISTORY_FILE, "w") as f:
             json.dump({}, f)
 
     history = {}
@@ -48,23 +57,32 @@ def save_to_history(command: str):
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
-    dictConfig(LOGGING_CONFIG)
-    typer.echo("\t\t\t---- Mini CLI ----")
-    typer.echo("\t\t\tWrite 'exit' to exit")
+    '''
+    callback - запускается при вызове скрипта без аргументов
+    invoke_without_command=True - callback выполняется без указания команды, т.е.
+    проверяет ОС, инициализирует логирование, запускает интерактивную оболочку
+
+    shell - интерактивная оболочка ClickShell
+    _original_onecmd - оригинальный команду
+    shell.onecmd - сохраняет команду в историю и затем выполняет её,
+    т.к. save_to_history возвращает None
+    '''
 
     system = platform.system()
     root_dir = Path.home()
 
     if system == "Windows":
-        typer.echo("Don't support Windows")
+        typer.echo("Не поддерживаем Венду")
         typer.exit(1)
     else:
         os.chdir(root_dir)
 
+    dictConfig(LOGGING_CONFIG)
+    typer.echo("\t\t  " + "-" * 10 + " МИНИ CLI " + "-" * 10)
+    typer.echo("\t\tНапишите 'exit' чтобы покинуть нас")
+
     if ctx.invoked_subcommand is None:
         shell = make_click_shell(ctx, prompt=lambda: os.getcwd() + "> ")
-
-        # Перехватываем через onecmd (click_shell использует cmd.Cmd, который вызывает onecmd)
         _original_onecmd = shell.onecmd
         shell.onecmd = lambda line: save_to_history(line) or _original_onecmd(line)
         shell.cmdloop()
@@ -75,9 +93,9 @@ def pwd() -> None:
 
 @app.command()
 def ls(
-    path: Path = typer.Argument(None, help="List of files and directories"),
-    long: bool = typer.Option(False, "--long", "-l", help="Long format"),
-    advanced: bool = typer.Option(False, "--advanced", "-a", help="Hidden files")
+    path: Path = typer.Argument(None, help="Какой каталог вывести"),
+    long: bool = typer.Option(False, "--long", "-l", help="Побольше инфы про файлы/каталоги"),
+    advanced: bool = typer.Option(False, "--advanced", "-a", help="Заныканные файлы")
 ):
     if path is None:
         path = Path.cwd()
@@ -90,8 +108,8 @@ def ls(
 
 @app.command()
 def cat(
-    filename: Path = typer.Argument(..., help="Path to file"),
-    mode: Literal[FileReadMode.string, FileReadMode.bytes] = typer.Option(FileReadMode.string, "--mode", "-m", help="Read mode"),
+    filename: Path = typer.Argument(..., help="Какой файл читаем"),
+    mode: Literal[FileReadMode.string, FileReadMode.bytes] = typer.Option(FileReadMode.string, "--mode", "-m", help="Как читаем"),
 ):
     try:
         data = cat_command(filename, mode=mode)
@@ -103,7 +121,7 @@ def cat(
 
 @app.command()
 def cd(
-    path: Path = typer.Argument(..., help="Path to directory"),
+    path: Path = typer.Argument(..., help="В какую директорию подорваться"),
 ):
     try:
         cd_command(path)
@@ -112,8 +130,8 @@ def cd(
 
 @app.command()
 def mv(
-    filename_source: Path = typer.Argument(..., help="Path to source file"),
-    filename_destination: Path = typer.Argument(..., help="Path to destination file"),
+    filename_source: Path = typer.Argument(..., help="Чё перекидываем/переименовываем"),
+    filename_destination: Path = typer.Argument(..., help="Во что перекидываем/переименовываем"),
 ):
     try:
         mv_command(filename_source, filename_destination)
@@ -122,37 +140,37 @@ def mv(
 
 @app.command()
 def rm(
-    filename: Path = typer.Argument(..., help="Path to file"),
-    recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursive remove"),
+    filename: Path = typer.Argument(..., help="Чё удаляем"),
+    recursive: bool = typer.Option(False, "--recursive", "-r", help="Удаляем каталог"),
 ):
     try:
         if recursive:
-            confirm = typer.confirm("Are you sure you want to remove this catalog?")
+            confirm = typer.confirm("Ты точно хочешь удалить этот каталог?")
             if not confirm:
-                typer.echo("Operation cancelled")
+                typer.echo("Отмена")
         rm_command(filename, recursive=recursive)
     except OSError as e:
         typer.echo(e)
 
 @app.command()
 def cp(
-    filename_source: Path = typer.Argument(..., help="Path to source file"),
-    filename_destination: Path = typer.Argument(..., help="Path to destination file"),
-    recursive: bool = typer.Option(False, "--recursive", "-r", help="Recursive copy"),
+    filename_source: Path = typer.Argument(..., help="Чё копируем"),
+    filename_destination: Path = typer.Argument(..., help="Куда копируем"),
+    recursive: bool = typer.Option(False, "--recursive", "-r", help="Копируем каталог"),
 ):
     try:
         if recursive:
-            confirm = typer.confirm("Are you sure you want to copy this catalog?")
+            confirm = typer.confirm("Ты точно хочешь копировать этот каталог?")
             if not confirm:
-                typer.echo("Operation cancelled")
+                typer.echo("Отмена")
         cp_command(filename_source, filename_destination, recursive=recursive)
     except OSError as e:
         typer.echo(e)
 
 @app.command()
 def zip(
-    src: Path = typer.Argument(..., help="Path to source file"),
-    archive_name: Path = typer.Argument(..., help="Path to archive file"),
+    src: Path = typer.Argument(..., help="Чё запаковываем"),
+    archive_name: Path = typer.Argument(..., help="Как назовём архив"),
 ):
     try:
         zip_command(src, archive_name)
@@ -163,7 +181,7 @@ def zip(
 
 @app.command()
 def unzip(
-    archive_name: Path = typer.Argument(..., help="Path to archive file"),
+    archive_name: Path = typer.Argument(..., help="Какой zip распаковываем"),
 ):
     try:
         unzip_command(archive_name)
@@ -174,8 +192,8 @@ def unzip(
 
 @app.command()
 def tar(
-    src: Path = typer.Argument(..., help="Path to source file"),
-    archive_name: Path = typer.Argument(..., help="Path to archive file"),
+    src: Path = typer.Argument(..., help="Чё запаковываем"),
+    archive_name: Path = typer.Argument(..., help="Как назовём архив"),
 ):
     try:
         tar_command(src, archive_name)
@@ -186,7 +204,7 @@ def tar(
 
 @app.command()
 def untar(
-    archive_name: Path = typer.Argument(..., help="Path to archive file"),
+    archive_name: Path = typer.Argument(..., help="Какой tar распаковываем"),
 ):
     try:
         untar_command(archive_name)

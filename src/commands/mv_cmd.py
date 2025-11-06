@@ -15,12 +15,12 @@ def mv_command(
     dst = Path(filename_destination)
 
     if not src.exists():
-        logger.error(f"Entered source file is not exists: {src}")
-        raise FileNotFoundError(f"Entered source file is not exists: {src}")
+        logger.error(f"Файл не существует: {src}")
+        raise FileNotFoundError(f"Файл не существует: {src}")
 
     try:
         shutil.move(src, dst)
-        logger.info(f"Successfully moved the file: {src} to {dst}")
+        logger.info(f"Успешно перемещено: {src} в {dst}")
     except OSError as e:
-        logger.error(f"{e}: {src} to {dst}")
+        logger.error(f"Ошибка при перемещении {src} в {dst}: {e}")
         raise

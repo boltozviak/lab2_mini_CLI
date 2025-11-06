@@ -13,17 +13,17 @@ def cd_command(
 
     if str(path) == '~':
         os.chdir(os.path.expanduser('~'))
-        logger.info(f"Changed directory from: '{const_path}' to: '{Path.cwd()}'")
+        logger.info(f"Сменили: '{const_path}' на: '{Path.cwd()}'")
         return
 
     if not path.exists():
-        logger.error(f"Path is not exists: {Path.cwd()}")
-        raise FileNotFoundError(f"Path is not exists: {Path.cwd()}")
+        logger.error(f"Файл не существует: {Path.cwd()}")
+        raise FileNotFoundError(f"Файл не существует: {Path.cwd()}")
 
     if not path.is_dir():
-        logger.error(f"Path is not a directory: {Path.cwd()}")
-        raise NotADirectoryError(f"Path is not a directory: {Path.cwd()}")
+        logger.error(f"Не директория: {Path.cwd()}")
+        raise NotADirectoryError(f"Не директория: {Path.cwd()}")
 
     os.chdir(path)
-    logger.info(f"Changed directory from: '{const_path}' to: '{Path.cwd()}'")
+    logger.info(f"Сменили директорию с: '{const_path}' на: '{Path.cwd()}'")
     return

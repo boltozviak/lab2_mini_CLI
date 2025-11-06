@@ -28,12 +28,12 @@ def test_ls_basic_functionality(fs: FakeFilesystem):
 def test_ls_errors(fs: FakeFilesystem):
     with pytest.raises(FileNotFoundError) as exc_info:
         ls_command("/nonexistent")
-    assert "Path is not exists" in str(exc_info.value)
+    assert "Файл не существует" in str(exc_info.value)
 
     fs.create_file("/file.txt")
     with pytest.raises(NotADirectoryError) as exc_info:
         ls_command("/file.txt")
-    assert "Path is not a directory" in str(exc_info.value)
+    assert "Не директория" in str(exc_info.value)
 
 
 def test_ls_long_format(fs: FakeFilesystem):

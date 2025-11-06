@@ -16,32 +16,32 @@ def cp_command(
     dst = Path(filename_destination)
 
     if not src.exists():
-        logger.error(f"Entered source file is not exists: {src}")
-        raise FileNotFoundError(f"Source file {src} not found or is not a file.")
+        logger.error(f"Файл не существует: {src}")
+        raise FileNotFoundError(f"Файл не существует: {src}")
 
 
     try:
         if src.is_file():
             shutil.copy(src, dst)
-            logger.info(f"Successfully copied the file: {src} to {dst}")
+            logger.info(f"Успешно скопировано: {src} в {dst}")
         elif src.is_dir():
             if not recursive:
-                logger.error(f"Source is a directory - use -r: {src}")
-                raise IsADirectoryError("Source is a directory - use -r")
+                logger.error(f"Не директория: {src}")
+                raise IsADirectoryError(f"Не директория: {src}")
             else:
                 if dst.exists() and dst.is_file():
-                    logger.error(f"Destination is a file: {dst}")
-                    raise IsADirectoryError(f"Destination is a file: {dst}")
+                    logger.error(f"Пункт назначения - файл: {dst}")
+                    raise IsADirectoryError(f"Пункт назначения - файл: {dst}")
                 elif dst.exists() and dst.is_dir():
                     destination_path = dst / src.name
                     shutil.copytree(src, destination_path)
-                    logger.info(f"Successfully copied the directory: {src} to {dst}")
+                    logger.info(f"Успешно скопировано: {src} в {dst}")
                 else:
                     shutil.copytree(src, dst)
-                    logger.info(f"Successfully copied the directory: {src} to {dst}")
+                    logger.info(f"Успешно скопировано: {src} в {dst}")
     except shutil.Error as e:
-        logger.error(f"Error copying {src} to {dst}: {e}")
+        logger.error(f"Ошибка при копировании {src} в {dst}: {e}")
         raise
     except OSError as e:
-        logger.error(f"Error copying {src} to {dst}: {e}")
+        logger.error(f"Ошибка при копировании {src} в {dst}: {e}")
         raise

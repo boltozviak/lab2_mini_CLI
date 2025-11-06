@@ -45,19 +45,19 @@ def test_cd_errors(fs: FakeFilesystem):
     os.chdir("/existing")
     with pytest.raises(FileNotFoundError) as exc_info:
         cd_command("/nonexistent")
-    assert "Path is not exists" in str(exc_info.value)
+    assert "Файл не существует" in str(exc_info.value)
 
 def test_cd_nonexistent_subdir_raises_error(fs: FakeFilesystem):
     fs.create_dir("/existing")
     with pytest.raises(FileNotFoundError) as exc_info:
         cd_command("/existing/nonexistent_subdir")
-    assert "Path is not exists" in str(exc_info.value)
+    assert "Файл не существует" in str(exc_info.value)
 
 def test_cd_file_raises_error(fs: FakeFilesystem):
     fs.create_file("/test_file.txt")
     with pytest.raises(NotADirectoryError) as exc_info:
         cd_command("/test_file.txt")
-    assert "Path is not a directory" in str(exc_info.value)
+    assert "Не директория" in str(exc_info.value)
 
 def test_pwd_command(fs: FakeFilesystem):
     fs.create_dir("/test_pwd")

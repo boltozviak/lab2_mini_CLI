@@ -17,12 +17,12 @@ def ls_command(
     path = Path(path)
 
     if not path.exists():
-        logger.error(f"Path is not exists: {path}")
-        raise FileNotFoundError(f"Path is not exists: {path}")
+        logger.error(f"Файл не существует: {path}")
+        raise FileNotFoundError(f"Файл не существует: {path}")
 
     if not path.is_dir():
-        logger.error(f"Path is not a directory: {path}")
-        raise NotADirectoryError(f"Path is not a directory: {path}")
+        logger.error(f"Не директория: {path}")
+        raise NotADirectoryError(f"Не директория: {path}")
 
     if advanced:
         files = os.listdir(path)
@@ -47,8 +47,8 @@ def ls_command(
 
             dir_files.append(file_str)
 
-        logger.info(path)
+        logger.info(f"Директория: {path}")
         return "\n".join(dir_files)
 
-    logger.info(path)
+    logger.info(f"Директория: {path}")
     return "\n".join(files)
