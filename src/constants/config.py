@@ -1,7 +1,7 @@
 from pathlib import Path
 
-LOG_FILE = "shell.log"
-LOG_FILE_PATH = Path(__file__).parent.parent.parent / LOG_FILE
+
+LOG_FILE= Path(__file__).parent.parent.parent / "shell.log"# есть ли альтернатива привязки файла к директории? переменное окружение?
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -22,7 +22,7 @@ LOGGING_CONFIG = {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "standard",
             "mode": "a",
-            "filename": str(LOG_FILE_PATH),
+            "filename": str(LOG_FILE),
             "maxBytes": 5 * 1024 * 1024,  # 5 MB before rotating
             "backupCount": 5,
             "level": "DEBUG",
