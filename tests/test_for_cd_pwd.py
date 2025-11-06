@@ -13,10 +13,14 @@ def test_cd_basic_paths(fs: FakeFilesystem):
     cd_command("/parent/child")
     assert Path.cwd() == Path("/parent/child")
 
-def test_cd_absolute_path(fs: FakeFilesystem):
+def test_cd_go_to_parent(fs: FakeFilesystem):
     fs.create_dir("/parent/child")
     cd_command("/parent")
     assert Path.cwd() == Path("/parent")
+
+def test_cd_go_to_child(fs: FakeFilesystem):
+    fs.create_dir("/parent/child")
+    cd_command("/parent")
     cd_command("child")
     assert Path.cwd() == Path("/parent/child")
 

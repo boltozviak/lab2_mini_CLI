@@ -6,16 +6,24 @@ from src.commands.cat_cmd import cat_command
 from src.constants.file_mode import FileReadMode
 
 
-def test_cat_string_mode(fs: FakeFilesystem):
+def test_cat_string_content(fs: FakeFilesystem):
     fs.create_file("/azaza.txt", contents="azaza")
     result = cat_command("/azaza.txt")
     assert result == "azaza"
+
+def test_cat_string_type(fs: FakeFilesystem):
+    fs.create_file("/azaza.txt", contents="azaza")
+    result = cat_command("/azaza.txt")
     assert isinstance(result, str)
 
-def test_cat_bytes_mode(fs: FakeFilesystem):
+def test_cat_bytes_content(fs: FakeFilesystem):
     fs.create_file("/azaza.bin", contents=b"azaza")
     result = cat_command("/azaza.bin", mode=FileReadMode.bytes)
     assert result == b"azaza"
+
+def test_cat_bytes_type(fs: FakeFilesystem):
+    fs.create_file("/azaza.bin", contents=b"azaza")
+    result = cat_command("/azaza.bin", mode=FileReadMode.bytes)
     assert isinstance(result, bytes)
 
 def test_cat_validation_errors(fs: FakeFilesystem):
