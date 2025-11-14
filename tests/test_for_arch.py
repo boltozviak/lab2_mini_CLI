@@ -19,6 +19,12 @@ def test_zip_command_wrong_ext_raises(fs: FakeFilesystem):
         zip_command("/test_dir", "/archive.tar")
     assert "Попытка создания zip архива без .zip" in str(exc_info.value)
 
+def test_creating_zip_without_suffix_raises(fs: FakeFilesystem):
+    fs.create_dir("/test_dir")
+    with pytest.raises(ValueError) as exc_info:
+        zip_command("/test_dir", "/archive")
+    assert "Попытка создания zip архива без .zip" in str(exc_info.value)
+
 def test_zip_command_existing_archive_raises(fs: FakeFilesystem):
     fs.create_dir("/test_dir")
     fs.create_file("/existing.zip")

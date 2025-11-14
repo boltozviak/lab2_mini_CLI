@@ -19,6 +19,7 @@ from src.commands.cp_cmd import cp_command
 from src.commands.history_cmd import history_command
 from src.commands.arch_cmd import zip_command, unzip_command, tar_command, untar_command
 from src.constants.file_mode import FileReadMode
+from src.commands.grep_cmd import grep_command
 
 
 app = typer.Typer()
@@ -190,3 +191,13 @@ def untar(
 @app.command()
 def history() -> None:
     typer.echo(history_command())
+
+@app.command()
+def grep(
+    pattern: str = typer.Argument(..., help="Какую подстроку ищем"),
+    filename: Path = typer.Argument(..., help="В каком файле ищем"),
+    recursive: bool = typer.Option(False, "--recursive", "-r", help="Ищем в поддиректориях"),
+    ignore: bool = typer.Option(False, "--ignore", "-i", help="Игнорируем регистр"),
+):
+    data = grep_command(pattern, filename, recursive=recursive, ignore=ignore)
+    typer.echo("\n".join(data))
