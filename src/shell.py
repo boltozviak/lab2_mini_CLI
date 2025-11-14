@@ -8,17 +8,17 @@ from typing import Literal
 from pathlib import Path
 from click_shell import make_click_shell
 
-from .constants.config import LOGGING_CONFIG
-from .commands.ls_cmd import ls_command
-from .commands.cat_cmd import cat_command
-from .commands.pwd_cmd import pwd_command
-from .commands.cd_cmd import cd_command
-from .commands.mv_cmd import mv_command
-from .commands.rm_cmd import rm_command
-from .commands.cp_cmd import cp_command
-from .commands.history_cmd import history_command
-from .commands.arch_cmd import zip_command, unzip_command, tar_command, untar_command
-from .constants.file_mode import FileReadMode
+from src.constants.config import LOGGING_CONFIG
+from src.commands.ls_cmd import ls_command
+from src.commands.cat_cmd import cat_command
+from src.commands.pwd_cmd import pwd_command
+from src.commands.cd_cmd import cd_command
+from src.commands.mv_cmd import mv_command
+from src.commands.rm_cmd import rm_command
+from src.commands.cp_cmd import cp_command
+from src.commands.history_cmd import history_command
+from src.commands.arch_cmd import zip_command, unzip_command, tar_command, untar_command
+from src.constants.file_mode import FileReadMode
 
 
 app = typer.Typer()
@@ -81,11 +81,24 @@ def main(ctx: typer.Context):
     typer.echo("\t\t  " + "-" * 10 + " МИНИ CLI " + "-" * 10)
     typer.echo("\t\tНапишите 'exit' чтобы покинуть нас")
 
-    if ctx.invoked_subcommand is None:
-        shell = make_click_shell(ctx, prompt=lambda: os.getcwd() + "> ")
-        _original_onecmd = shell.onecmd
-        shell.onecmd = lambda line: save_to_history(line) or _original_onecmd(line)
-        shell.cmdloop()
+    shell = make_click_shell(ctx, prompt=lambda: os.getcwd() + "> ")
+    _original_onecmd = shell.onecmd
+
+    def error_handler(line: str):
+        try:
+            save_to_history(line)
+            return _original_onecmd(line)
+        except OSError as e:
+            typer.echo(f"Ошибка работы с файлом/директорией: {e}")
+        except ValueError as e:
+            typer.echo(f"Ошибка значения: {e}")
+        except KeyboardInterrupt:
+            typer.echo("\nИспользуйте 'exit' для выхода")
+        except Exception as e:
+            typer.echo(f"Неожиданная ошибка: {e}")
+
+    shell.onecmd = error_handler
+    shell.cmdloop()
 
 @app.command()
 def pwd() -> None:
@@ -99,58 +112,41 @@ def ls(
 ):
     if path is None:
         path = Path.cwd()
-
-    try:
-        content = ls_command(path, long_format=long, advanced=advanced)
-        typer.echo(content)
-    except OSError as e:
-        typer.echo(e)
+    content = ls_command(path, long_format=long, advanced=advanced)
+    typer.echo(content)
 
 @app.command()
 def cat(
     filename: Path = typer.Argument(..., help="Какой файл читаем"),
     mode: Literal[FileReadMode.string, FileReadMode.bytes] = typer.Option(FileReadMode.string, "--mode", "-m", help="Как читаем"),
 ):
-    try:
-        data = cat_command(filename, mode=mode)
-        typer.echo(data)
-    except OSError as e:
-        typer.echo(e)
-    except ValueError as e:
-        typer.echo(e)
+    data = cat_command(filename, mode=mode)
+    typer.echo(data)
 
 @app.command()
 def cd(
     path: Path = typer.Argument(..., help="В какую директорию подорваться"),
 ):
-    try:
-        cd_command(path)
-    except OSError as e:
-        typer.echo(e)
+    cd_command(path)
 
 @app.command()
 def mv(
     filename_source: Path = typer.Argument(..., help="Чё перекидываем/переименовываем"),
     filename_destination: Path = typer.Argument(..., help="Во что перекидываем/переименовываем"),
 ):
-    try:
-        mv_command(filename_source, filename_destination)
-    except OSError as e:
-        typer.echo(e)
+    mv_command(filename_source, filename_destination)
 
 @app.command()
 def rm(
     filename: Path = typer.Argument(..., help="Чё удаляем"),
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Удаляем каталог"),
 ):
-    try:
-        if recursive:
-            confirm = typer.confirm("Ты точно хочешь удалить этот каталог?")
-            if not confirm:
-                typer.echo("Отмена")
-        rm_command(filename, recursive=recursive)
-    except OSError as e:
-        typer.echo(e)
+    if recursive:
+        confirm = typer.confirm("Ты точно хочешь удалить этот каталог?")
+        if not confirm:
+            typer.echo("Отмена")
+            return
+    rm_command(filename, recursive=recursive)
 
 @app.command()
 def cp(
@@ -158,60 +154,38 @@ def cp(
     filename_destination: Path = typer.Argument(..., help="Куда копируем"),
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Копируем каталог"),
 ):
-    try:
-        if recursive:
-            confirm = typer.confirm("Ты точно хочешь копировать этот каталог?")
-            if not confirm:
-                typer.echo("Отмена")
-        cp_command(filename_source, filename_destination, recursive=recursive)
-    except OSError as e:
-        typer.echo(e)
+    if recursive:
+        confirm = typer.confirm("Ты точно хочешь копировать этот каталог?")
+        if not confirm:
+            typer.echo("Отмена")
+            return
+    cp_command(filename_source, filename_destination, recursive=recursive)
 
 @app.command()
 def zip(
     src: Path = typer.Argument(..., help="Чё запаковываем"),
     archive_name: Path = typer.Argument(..., help="Как назовём архив"),
 ):
-    try:
-        zip_command(src, archive_name)
-    except OSError as e:
-        typer.echo(e)
-    except ValueError as e:
-        typer.echo(e)
+    zip_command(src, archive_name)
 
 @app.command()
 def unzip(
     archive_name: Path = typer.Argument(..., help="Какой zip распаковываем"),
 ):
-    try:
-        unzip_command(archive_name)
-    except OSError as e:
-        typer.echo(e)
-    except ValueError as e:
-        typer.echo(e)
+    unzip_command(archive_name)
 
 @app.command()
 def tar(
     src: Path = typer.Argument(..., help="Чё запаковываем"),
     archive_name: Path = typer.Argument(..., help="Как назовём архив"),
 ):
-    try:
-        tar_command(src, archive_name)
-    except OSError as e:
-        typer.echo(e)
-    except ValueError as e:
-        typer.echo(e)
+    tar_command(src, archive_name)
 
 @app.command()
 def untar(
     archive_name: Path = typer.Argument(..., help="Какой tar распаковываем"),
 ):
-    try:
-        untar_command(archive_name)
-    except OSError as e:
-        typer.echo(e)
-    except ValueError as e:
-        typer.echo(e)
+    untar_command(archive_name)
 
 @app.command()
 def history() -> None:

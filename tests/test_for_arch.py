@@ -17,7 +17,7 @@ def test_zip_command_wrong_ext_raises(fs: FakeFilesystem):
     fs.create_dir("/test_dir")
     with pytest.raises(ValueError) as exc_info:
         zip_command("/test_dir", "/archive.tar")
-    assert "Не zip архив" in str(exc_info.value)
+    assert "Попытка создания zip архива без .zip" in str(exc_info.value)
 
 def test_zip_command_existing_archive_raises(fs: FakeFilesystem):
     fs.create_dir("/test_dir")
@@ -63,7 +63,7 @@ def test_unzip_not_zip_raises(fs: FakeFilesystem):
     fs.create_file("/not_zip.zip")
     with pytest.raises(ValueError) as exc_info:
         unzip_command("/not_zip.zip")
-    assert "Не zip архив" in str(exc_info.value)
+    assert "Попытка распаковки не zip архива" in str(exc_info.value)
 
 
 def test_tar_command_success(fs: FakeFilesystem):
@@ -76,13 +76,13 @@ def test_tar_wrong_ext_zip_raises(fs: FakeFilesystem):
     fs.create_dir("/test_dir")
     with pytest.raises(ValueError) as exc_info:
         tar_command("/test_dir", "/archive.zip")
-    assert "Не tar.gz архив" in str(exc_info.value)
+    assert "Попытка создания tar.gz архива без .tar.gz" in str(exc_info.value)
 
 def test_tar_wrong_ext_tar_raises(fs: FakeFilesystem):
     fs.create_dir("/test_dir")
     with pytest.raises(ValueError) as exc_info:
         tar_command("/test_dir", "/archive.tar")
-    assert "Не tar.gz архив" in str(exc_info.value)
+    assert "Попытка создания tar.gz архива без .tar.gz" in str(exc_info.value)
 
 def test_tar_existing_archive_raises(fs: FakeFilesystem):
     fs.create_dir("/test_dir")
@@ -102,8 +102,6 @@ def test_tar_src_not_dir_raises(fs: FakeFilesystem):
         tar_command("/file.txt", "/archive.tar.gz")
     assert "Не директория" in str(exc_info.value)
 
-
-
 def test_untar_creates_file(fs: FakeFilesystem):
     fs.create_dir("/test_dir")
     fs.create_file("/test_dir/file.txt")
@@ -121,4 +119,4 @@ def test_untar_not_targz_raises(fs: FakeFilesystem):
     fs.create_file("/not_tar.tar.gz")
     with pytest.raises(ValueError) as exc_info:
         untar_command("/not_tar.tar.gz")
-    assert "Не tar.gz архив" in str(exc_info.value)
+    assert "Попытка распаковки не tar.gz архива" in str(exc_info.value)

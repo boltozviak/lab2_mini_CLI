@@ -3,6 +3,8 @@ import shutil
 from os import PathLike
 from pathlib import Path
 
+from src.constants.denied_files import get_denied_paths
+
 logger = logging.getLogger(__name__)
 
 def rm_command(
@@ -24,7 +26,7 @@ def rm_command(
 
     source_file = Path(filename_source)
     current_path = Path.cwd().resolve()
-    denied_paths = {Path.home().resolve(), Path("/").resolve(), Path.cwd().resolve()}
+    denied_paths = get_denied_paths(current_path)
 
 
     if not source_file.exists():

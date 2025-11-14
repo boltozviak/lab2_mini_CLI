@@ -2,7 +2,7 @@ import logging
 import shutil
 from os import PathLike
 from pathlib import Path
-
+from src.constants.denied_files import get_denied_paths
 
 logger = logging.getLogger(__name__)
 
@@ -23,15 +23,23 @@ def cp_command(
     - FileNotFoundError - не найдено/не существует исходный файл
     - IsADirectoryError - копированеи директоирии происходит не рекурсивно
     - NotADirectoryError - попытка копирвать директорию в файл
+    - PermissionError - попытка копировать важный файл/директорию
     '''
 
     src = Path(filename_source)
     dst = Path(filename_destination)
+    current_path = Path.cwd().resolve()
+    denied_paths = get_denied_paths(current_path)
 
     if not src.exists():
         logger.error(f"Файл не существует: {src}")
         raise FileNotFoundError(f"Файл не существует: {src}")
 
+    src = src.resolve()
+
+    if src in denied_paths:
+        logger.error(f"Попытка копировать важный файл: {src}")
+        raise PermissionError(f"Нельзя копировать данный файл: {src}")
 
     try:
         if src.is_file():

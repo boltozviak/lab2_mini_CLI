@@ -19,22 +19,20 @@ def cd_command(
     - NotADirectoryError - путь ведёт не в директорию
     '''
 
-    path = Path(path)
-    const_path = Path.cwd()
+    src_path = Path.cwd()
 
     if str(path) == '~':
-        os.chdir(os.path.expanduser('~'))
-        logger.info(f"Сменили: '{const_path}' на: '{Path.cwd()}'")
-        return
+        dest_path = Path(os.path.expanduser('~'))
+    else:
+        dest_path = Path(path)
 
-    if not path.exists():
-        logger.error(f"Файл не существует: {path}")
-        raise FileNotFoundError(f"Файл не существует: {path}")
+    if not dest_path.exists():
+        logger.error(f"Файл не существует: {dest_path}")
+        raise FileNotFoundError(f"Файл не существует: {dest_path}")
 
-    if not path.is_dir():
-        logger.error(f"Не директория: {path}")
-        raise NotADirectoryError(f"Не директория: {path}")
+    if not dest_path.is_dir():
+        logger.error(f"Не директория: {dest_path}")
+        raise NotADirectoryError(f"Не директория: {dest_path}")
 
-    os.chdir(path)
-    logger.info(f"Сменили директорию с: '{const_path}' на: '{Path.cwd()}'")
-    return
+    os.chdir(dest_path)
+    logger.info(f"Сменили директорию с: '{src_path}' на: '{Path.cwd()}'")
